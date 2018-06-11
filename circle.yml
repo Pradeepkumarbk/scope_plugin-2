@@ -1,14 +1,9 @@
-general:
-  branches:
-    ignore:
-      - gh-pages
-
 machine:
   services:
     - docker
   environment:
     GOPATH: /home/ubuntu
-    SRCDIR: /home/ubuntu/scope-plugin
+    SRCDIR: /home/ubuntu/scope_plugin-2	
     PATH: $PATH:$HOME/.local/bin
 
 dependencies:
@@ -19,22 +14,17 @@ dependencies:
 
 test:
   override:
-    - cd $SRCDIR/iops/vendor/golang.org/x
-    - rm -rf test net
-    - git clone https://github.com/golang/net
-    - git clone https://github.com/golang/text
-    - cd
-    - cd $SRCDIR/iops  && make .iops.uptodate && docker tag weaveworksplugins/scope-iops openebs/iops:$(./tools/image-tag)
-    - docker tag weaveworksplugins/scope-iops openebs/iops:latest
+    - cd $SRCDIR && make .iops.uptodate && docker tag weaveworksplugins/scope-iops pradeepkumar95/iops:$(./tools/image-tag)
+    - docker tag weaveworksplugins/scope-iops pradeepkumar95/iops:latest
 
 deployment:
   stag:
     branch: staging
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker push openebs/iops:$(./tools/image-tag)
+      - docker push pradeepkumar95/iops:$(./tools/image-tag)
   pro:
     branch: master
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker push openebs/iops:latest
+      - docker push pradeepkumar95/iops:latest
