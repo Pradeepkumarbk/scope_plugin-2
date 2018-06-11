@@ -1,21 +1,30 @@
-version: 2
-jobs:
-  build:
-    docker:
-      - image: ubuntu:14.04
-    working_directory: /go/src/github.com/openebs/node-disk-manager
-    steps:
-      - checkout
-      - run:
-          command: |
-          make .iops.uptodate && docker tag weaveworksplugins/scope-iops pradeepkumar95/iops:$(./tools/image-tag)
-          docker tag weaveworksplugins/scope-iops pradeepkumar95/iops:latest
-      - deploy:
-	  command: |
-            docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-	    if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker push pradeepkumar95/iops:latest
-	    else 
-              docker push pradeepkumar95/iops:$(./tools/image-tag) 
-	    fi
+machine:
+  services:
+    - docker
+  environment:
+    GOPATH: /home/ubuntu
+    SRCDIR: /home/ubuntu/scope_plugin-2	
+    PATH: $PATH:$HOME/.local/bin
 
+dependencies:
+  cache_directories:
+    - "~/docker"
+  override:
+    - echo "no dependencies"
+
+test:
+  override:
+    - cd $SRCDIR && make .iops.uptodate && docker tag weaveworksplugins/scope-iops pradeepkumar95/iops:$(./tools/image-tag)
+    - docker tag weaveworksplugins/scope-iops pradeepkumar95/iops:latest
+
+deployment:
+  stag:
+    branch: staging
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push pradeepkumar95/iops:$(./tools/image-tag)
+  pro:
+    branch: master
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push pradeepkumar95/iops:latest
